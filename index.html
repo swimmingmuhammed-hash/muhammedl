@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="si">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>සිංහල AI සහායකයා</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: system-ui, sans-serif; background: #f5f5f5; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 16px; }
+    #wrap { display: flex; flex-direction: column; height: 620px; width: 100%; max-width: 480px; border: 1px solid #e0e0e0; border-radius: 16px; overflow: hidden; background: #fff; box-shadow: 0 4px 24px rgba(0,0,0,0.08); }
+    #hdr { padding: 12px 16px; border-bottom: 1px solid #e0e0e0; background: #f8f8f8; display: flex; align-items: center; gap: 10px; }
+    .av { width: 38px; height: 38px; border-radius: 50%; background: #dbeafe; display: flex; align-items: center; justify-content: center; color: #1d4ed8; font-weight: 600; font-size: 13px; flex-shrink: 0; }
+    .hn { font-size: 14px; font-weight: 600; color: #111; }
+    .hs { font-size: 12px; color: #888; display: flex; align-items: center; gap: 5px; margin-top: 1px; }
+    .dot { width: 6px; height: 6px; border-radius: 50%; background: #22c55e; display: inline-block; }
+    .badge { margin-left: auto; font-size: 11px; padding: 3px 9px; border-radius: 20px; background: #dbeafe; color: #1d4ed8; font-weight: 600; }
+    #msgs { flex: 1; overflow-y: auto; padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; }
+    #msgs::-webkit-scrollbar { width: 3px; }
+    #msgs::-webkit-scrollbar-thumb { background: #ddd; border-radius: 2px; }
+    .msg { display: flex; flex-direction: column; max-width: 82%; }
+    .msg.user { align-self: flex-end; align-items: flex-end; }
+    .msg.bot { align-self: flex-start; align-items: flex-start; }
+    .bubble { padding: 9px 13px; border-radius: 14px; font-size: 14px; line-height: 1.65; border: 1px solid #e0e0e0; background: #fff; color: #111; }
+    .msg.user .bubble { background: #dbeafe; border-color: #bfdbfe; color: #1e3a8a; }
+    .bubble img { max-width: 200px; max-height: 180px; border-radius: 8px; display: block; margin-bottom: 6px; }
+    .file-chip { display: inline-flex; align-items: center; gap: 6px; padding: 6px 10px; border-radius: 8px; background: #f5f5f5; border: 1px solid #e0e0e0; font-size: 12px; margin-bottom: 6px; max-width: 220px; }
+    .file-chip i { font-size: 16px; flex-shrink: 0; }
+    .file-chip span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .ts { font-size: 11px; color: #aaa; margin-top: 3px; padding: 0 3px; }
+    .typing { display: flex; align-items: center; gap: 4px; padding: 10px 13px; background: #fff; border: 1px solid #e0e0e0; border-radius: 14px; }
+    .typing span { width: 6px; height: 6px; border-radius: 50%; background: #aaa; animation: bl 1.2s infinite; }
+    .typing span:nth-child(2) { animation-delay: .2s; }
+    .typing span:nth-child(3) { animation-delay: .4s; }
+    @keyframes bl { 0%,80%,100% { opacity:.2; } 40% { opacity:1; } }
+    #quick { display: flex; gap: 6px; padding: 8px 12px; flex-wrap: wrap; border-top: 1px solid #e0e0e0; background: #f8f8f8; }
+    .qb { font-size: 12px; padding: 4px 10px; border-radius: 20px; border: 1px solid #d0d0d0; background: #fff; color: #555; cursor: pointer; white-space: nowrap; }
+    .qb:hover { background: #dbeafe; color: #1d4ed8; border-color: #bfdbfe; }
+    #attachments { display: none; padding: 8px 12px; gap: 8px; flex-wrap: wrap; border-top: 1px solid #e0e0e0; background: #f8f8f8; }
+    .att-item { display: flex; align-items: center; gap: 6px; padding: 5px 8px; border-radius: 8px; border: 1px solid #e0e0e0; background: #fff; font-size: 12px; max-width: 200px; }
+    .att-item i { font-size: 15px; flex-shrink: 0; color: #888; }
+    .att-item span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; color: #555; }
+    .att-remove { background: none; border: none; cursor: pointer; color: #bbb; padding: 0 2px; line-height: 1; font-size: 14px; flex-shrink: 0; }
+    .att-remove:hover { color: #ef4444; }
+    #footer { padding: 8px 12px; border-top: 1px solid #e0e0e0; display: flex; flex-direction: column; gap: 6px; background: #f8f8f8; }
+    #footer-btns { display: flex; gap: 6px; align-items: center; }
+    .attach-btn { width: 34px; height: 34px; border-radius: 8px; border: 1px solid #d0d0d0; background: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center; color: #555; flex-shrink: 0; position: relative; }
+    .attach-btn:hover { background: #dbeafe; color: #1d4ed8; border-color: #bfdbfe; }
+    #inp { flex: 1; resize: none; border: 1px solid #d0d0d0; border-radius: 8px; padding: 7px 11px; font-size: 14px; font-family: inherit; line-height: 1.5; min-height: 36px; max-height: 90px; background: #fff; color: #111; outline: none; }
+    #inp:focus { border-color: #93c5fd; }
+    #send { width: 34px; height: 34px; border-radius: 8px; background: #1d4ed8; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; color: #fff; flex-shrink: 0; }
+    #send:hover { background: #1e40af; }
+    #send:disabled { opacity: .4; cursor: default; }
+    .menu { display: none; position: absolute; bottom: 38px; left: 0; background: #fff; border: 1px solid #e0e0e0; border-radius: 10px; overflow: hidden; z-index: 10; min-width: 160px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+    .menu.open { display: block; }
+    .menu-item { display: flex; align-items: center; gap: 8px; padding: 9px 12px; font-size: 13px; color: #111; cursor: pointer; border: none; background: none; width: 100%; text-align: left; }
+    .menu-item:hover { background: #f0f4ff; }
+    .menu-item i { font-size: 16px; color: #555; }
+    .err { color: #dc2626; font-size: 13px; }
+  </style>
+</head>
+<body>
+
+<div id="wrap">
+  <div id="hdr">
+    <div class="av">AI</div>
+    <div>
+      <div class="hn">සිංහල AI සහායකයා</div>
+      <div class="hs"><span class="dot"></span>සබැඳිව ඇත</div>
+    </div>
+    <div class="badge">සිං · EN</div>
+  </div>
+
+  <div id="msgs">
+    <div class="msg bot">
+      <div class="bubble">
+        ආයුබෝවන්! 🙏 සිංහලෙන් හෝ ඉංග්‍රීසියෙන් කතා කරන්න. ඡායාරූප සහ ලිපිගොනු යවන්න පුළුවන්!<br><br>
+        <em style="font-size:13px;color:#888">Hello! Chat in Sinhala or English — attach images and files too!</em>
+      </div>
+      <div class="ts">දැන්</div>
+    </div>
+  </div>
+
+  <div id="quick">
+    <button class="qb" onclick="qs('ඔබ කවුද?')">ඔබ කවුද?</button>
+    <button class="qb" onclick="qs('ශ්‍රී ලංකාව ගැන කියන්න')">ශ්‍රී ලංකාව</button>
+    <button class="qb" onclick="qs('What can you help me with?')">What can you do?</button>
+    <button class="qb" onclick="qs('සිංහල කවියක් ලියන්න')">සිංහල කවියක්</button>
+  </div>
+
+  <div id="attachments"></div>
+
+  <div id="footer">
+    <div id="footer-btns">
+      <div style="position:relative">
+        <button class="attach-btn" id="plus-btn" onclick="toggleMenu()" aria-label="Add attachment">
+          <i class="ti ti-plus" style="font-size:18px"></i>
+        </button>
+        <div class="menu" id="att-menu">
+          <button class="menu-item" onclick="pickImg()"><i class="ti ti-photo"></i>ඡායාරූපය / Image</button>
+          <button class="menu-item" onclick="pickFile()"><i class="ti ti-file-text"></i>ලිපිගොනුව / File</button>
+        </div>
+      </div>
+      <textarea id="inp" placeholder="සිංහලෙන් ලියන්න... / Type in English..." rows="1"></textarea>
+      <button id="send" onclick="go()" aria-label="Send">
+        <i class="ti ti-send" style="font-size:15px"></i>
+      </button>
+    </div>
+  </div>
+</div>
+
+<input type="file" id="img-input" accept="image/*" style="display:none" onchange="onImg(event)">
+<input type="file" id="file-input" accept=".pdf,.txt,.csv,.json,.md,.py,.js,.html,.css,.xml" style="display:none" onchange="onFilePick(event)">
+
+<script>
+  const msgsEl = document.getElementById('msgs');
+  const inpEl = document.getElementById('inp');
+  const sendBtn = document.getElementById('send');
+  const attBar = document.getElementById('attachments');
+  const menu = document.getElementById('att-menu');
+  let history = [];
+  let pendingAttachments = [];
+
+  // Your Anthropic API key
+  const API_KEY = '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';
+
+  // Using a CORS proxy to allow browser requests to Anthropic API
+  const API_URL = 'https://corsproxy.io/?https://api.anthropic.com/v1/messages';
+
+  const SYSTEM = `You are a warm, helpful AI assistant for Sri Lankan users. Your PRIMARY language is Sinhala (සිංහල Unicode script).
+- If the user writes in Sinhala → reply ONLY in Sinhala.
+- If the user writes in English → reply in Sinhala first, then add a short English summary below after a line break.
+- If an image is shared, describe and analyze it in Sinhala first, then English.
+- If a file/document is shared, summarize and analyze it in Sinhala first, then English.
+- Be friendly, concise, and culturally aware of Sri Lanka.`;
+
+  function now() {
+    const d = new Date();
+    return d.getHours() + ':' + String(d.getMinutes()).padStart(2, '0');
+  }
+
+  function toggleMenu() { menu.classList.toggle('open'); }
+  document.addEventListener('click', e => {
+    if (!e.target.closest('#plus-btn') && !e.target.closest('#att-menu')) menu.classList.remove('open');
+  });
+  function pickImg() { menu.classList.remove('open'); document.getElementById('img-input').click(); }
+  function pickFile() { menu.classList.remove('open'); document.getElementById('file-input').click(); }
+
+  function fileIcon(name) {
+    const ext = (name.split('.').pop() || '').toLowerCase();
+    if (['jpg','jpeg','png','gif','webp'].includes(ext)) return 'ti-photo';
+    if (ext === 'pdf') return 'ti-file-type-pdf';
+    if (['txt','md'].includes(ext)) return 'ti-file-text';
+    if (['py','js','html','css','json','xml'].includes(ext)) return 'ti-code';
+    if (ext === 'csv') return 'ti-table';
+    return 'ti-file';
+  }
+
+  function renderAttachments() {
+    if (pendingAttachments.length === 0) { attBar.style.display = 'none'; return; }
+    attBar.style.display = 'flex';
+    attBar.innerHTML = '';
+    pendingAttachments.forEach((a, i) => {
+      const el = document.createElement('div');
+      el.className = 'att-item';
+      if (a.type === 'image') {
+        el.innerHTML = `<img src="${a.dataUrl}" style="width:28px;height:28px;object-fit:cover;border-radius:4px;flex-shrink:0"><span>${a.name}</span><button class="att-remove" onclick="removeAtt(${i})"><i class="ti ti-x"></i></button>`;
+      } else {
+        el.innerHTML = `<i class="ti ${fileIcon(a.name)}"></i><span>${a.name}</span><button class="att-remove" onclick="removeAtt(${i})"><i class="ti ti-x"></i></button>`;
+      }
+      attBar.appendChild(el);
+    });
+  }
+
+  function removeAtt(i) { pendingAttachments.splice(i, 1); renderAttachments(); }
+
+  function onImg(e) {
+    const file = e.target.files[0]; if (!file) return;
+    const reader = new FileReader();
+    reader.onload = ev => {
+      pendingAttachments.push({ type: 'image', name: file.name, dataUrl: ev.target.result, base64: ev.target.result.split(',')[1], mediaType: file.type });
+      renderAttachments();
+    };
+    reader.readAsDataURL(file);
+    e.target.value = '';
+  }
+
+  function onFilePick(e) {
+    const file = e.target.files[0]; if (!file) return;
+    const reader = new FileReader();
+    const isPDF = file.type === 'application/pdf';
+    reader.onload = ev => {
+      if (isPDF) {
+        pendingAttachments.push({ type: 'pdf', name: file.name, base64: ev.target.result.split(',')[1], mediaType: 'application/pdf' });
+      } else {
+        pendingAttachments.push({ type: 'text', name: file.name, text: ev.target.result });
+      }
+      renderAttachments();
+    };
+    if (isPDF) reader.readAsDataURL(file);
+    else reader.readAsText(file);
+    e.target.value = '';
+  }
+
+  function addMsg(html, role) {
+    const d = document.createElement('div');
+    d.className = 'msg ' + role;
+    d.innerHTML = `<div class="bubble">${html}</div><div class="ts">${now()}</div>`;
+    msgsEl.appendChild(d);
+    msgsEl.scrollTop = msgsEl.scrollHeight;
+  }
+
+  function showTyping() {
+    const d = document.createElement('div'); d.className = 'msg bot'; d.id = 'typ';
+    d.innerHTML = '<div class="typing"><span></span><span></span><span></span></div>';
+    msgsEl.appendChild(d); msgsEl.scrollTop = msgsEl.scrollHeight;
+  }
+  function hideTyping() { const t = document.getElementById('typ'); if (t) t.remove(); }
+
+  function qs(t) { inpEl.value = t; go(); }
+
+  async function go() {
+    const text = inpEl.value.trim();
+    if ((!text && pendingAttachments.length === 0) || sendBtn.disabled) return;
+    inpEl.value = ''; inpEl.style.height = 'auto';
+
+    let userBubble = '';
+    let msgContent = [];
+
+    pendingAttachments.forEach(a => {
+      if (a.type === 'image') {
+        userBubble += `<img src="${a.dataUrl}" alt="${a.name}">`;
+        msgContent.push({ type: 'image', source: { type: 'base64', media_type: a.mediaType, data: a.base64 } });
+      } else if (a.type === 'pdf') {
+        userBubble += `<div class="file-chip"><i class="ti ti-file-type-pdf"></i><span>${a.name}</span></div>`;
+        msgContent.push({ type: 'document', source: { type: 'base64', media_type: 'application/pdf', data: a.base64 } });
+      } else {
+        userBubble += `<div class="file-chip"><i class="ti ${fileIcon(a.name)}"></i><span>${a.name}</span></div>`;
+        msgContent.push({ type: 'text', text: `[File: ${a.name}]\n${a.text}` });
+      }
+    });
+
+    const prompt = text || 'මෙම ගොනු ගැන සිංහලෙන් කියන්න. / Please analyze these in Sinhala first, then English.';
+    if (text) userBubble += `<span>${text.replace(/\n/g, '<br>')}</span>`;
+    msgContent.push({ type: 'text', text: prompt });
+
+    addMsg(userBubble, 'user');
+    history.push({ role: 'user', content: msgContent });
+    pendingAttachments = [];
+    renderAttachments();
+    sendBtn.disabled = true;
+    showTyping();
+
+    try {
+      const res = await fetch(API_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': API_KEY,
+          'anthropic-version': '2023-06-01'
+        },
+        body: JSON.stringify({
+          model: 'claude-haiku-4-5-20251001',
+          max_tokens: 1500,
+          system: SYSTEM,
+          messages: history
+        })
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.error?.message || 'Error ' + res.status);
+
+      const reply = (data.content || []).filter(b => b.type === 'text').map(b => b.text).join('');
+      hideTyping();
+      if (reply) {
+        addMsg(reply.replace(/\n/g, '<br>'), 'bot');
+        history.push({ role: 'assistant', content: reply });
+      } else {
+        addMsg('හිස් පිළිතුරක් ලැබුණි. / Empty response.', 'bot');
+      }
+    } catch (e) {
+      hideTyping();
+      addMsg(`<span class="err">දෝෂය: ${e.message}</span>`, 'bot');
+    }
+
+    sendBtn.disabled = false;
+    inpEl.focus();
+  }
+
+  inpEl.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); go(); } });
+  inpEl.addEventListener('input', () => { inpEl.style.height = 'auto'; inpEl.style.height = Math.min(inpEl.scrollHeight, 90) + 'px'; });
+</script>
+</body>
+</html>
